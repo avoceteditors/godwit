@@ -12,16 +12,10 @@ import java.lang.String;
 import java.util.concurrent.Callable;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.LogManager;
-import java.util.logging.Level;
+import org.fusesource.jansi.AnsiConsole;
 
 // Local Imports
-import com.avocet.godwit.Operation;
-import com.avocet.godwit.GLogBaseFormat;
-import com.avocet.godwit.GLogDebugFormat;
-
-
+import com.avocet.godwit.Kluit;
 
 /**
  * Hello world!
@@ -74,61 +68,28 @@ public class App implements Callable<Integer>{
   }
 
   /* ;;;;;;;;;;;;;;;;;;;;;; LOGGING ::::::::::::::::::::::::*/
+  private static Logger logger;
+  public void configLogger(){
+      AnsiConsole.systemInstall();
+      Kluit logConf = new Kluit();
+      logConf.set(verbose, debug);
+
+      logger = logConf.getLogger();
+  }
   
 
-  // General Members
-  private Operation op;
-  private static final LogManager logmgr = LogManager.getLogManager();
-  private static final Logger logger = logmgr.getLogger(Logger.GLOBAL_LOGGER_NAME);
-
-  private static void setLogger(){
-	logger.setUseParentHandlers(false);
-	
-	ConsoleHandler handler = new ConsoleHandler();
-
-	if (debug){
-	  handler.setFormatter(new GLogDebugFormat());
-	} else {
-	  handler.setFormatter(new GLogBaseFormat());
-	}
-	logger.addHandler(handler);
-	logger.setLevel(Level.FINEST);
-  } 
-
-
-  /* ;;;;;;;;;;;;;;;;;;;;;; COMMANDS ::::::::::::::::::::::::*/
+   /* ;;;;;;;;;;;;;;;;;;;;;; COMMANDS ::::::::::::::::::::::::*/
   @Command(name="info")
   private int info(){
 	// Initialize Logging
-	setLogger();
-	logger.info("Called information operation");
-
-	// Initialize Operation
-	logger.finest("Initializing operation");
-	op = new Operation();
-	logger.finest("Operation initialzied");
-
-	logger.finest("Running operation");
-	op.info(cache, source);
-
+    configLogger();
+    logger.warning("Testing");
 	return 0;
   }
 
   @Command(name="compile",
 	description="Compiles source data from configuration file")
   private int compile(){
-	setLogger();
-	logger.info("Called compile operation");
-
-	// Initialize Operation
-	logger.finest("Initializing operation");
-	op = new Operation();
-	logger.finest("Operation initialzied");
-
-	logger.finest("Running operation");
-	op.compile(cache, source);
-
-
 	return 0;
   }
 
