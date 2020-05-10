@@ -49,7 +49,7 @@ public class Kluit {
         Kluit.debug = debugArg;
     }
 
-    public Logger getLogger(String name){
+    public static Logger getLogger(String name){
 
         // Initialize Logger
         Logger logger = Logger.getLogger(name);
@@ -62,16 +62,17 @@ public class Kluit {
 
         // Set Logging Level
         if (debug & verbose){
-            handler.setLevel(Level.FINEST);
+            logger.setLevel(Level.FINEST);
+
         } 
         else if (debug){
-            handler.setLevel(Level.CONFIG);
+            logger.setLevel(Level.CONFIG);
         }
         else if (verbose){
-            handler.setLevel(Level.INFO);
+            logger.setLevel(Level.INFO);
         }
         else {
-            handler.setLevel(Level.WARNING);
+            logger.setLevel(Level.WARNING);
         }
 
         // Configure Formatter
@@ -122,7 +123,7 @@ public class Kluit {
     }
 
 
-    public Logger getLogger(){
+    public static Logger getLogger(){
         return getLogger("DEFAULT");
     }
 

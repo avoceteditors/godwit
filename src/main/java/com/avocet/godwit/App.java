@@ -15,7 +15,9 @@ import java.util.logging.Logger;
 import org.fusesource.jansi.AnsiConsole;
 
 // Local Imports
+import com.avocet.godwit.Compiler;
 import com.avocet.godwit.Kluit;
+import com.avocet.godwit.source.Source;
 
 /**
  * Hello world!
@@ -83,14 +85,20 @@ public class App implements Callable<Integer>{
   private int info(){
 	// Initialize Logging
     configLogger();
-    logger.warning("Testing");
+    logger.info("Called information operation");
 	return 0;
   }
 
   @Command(name="compile",
 	description="Compiles source data from configuration file")
   private int compile(){
-	return 0;
+      // Initialize Logger
+      configLogger();
+      logger.info("Called compilation operation");
+
+      Source src = new Source(source);
+
+      return 0;
   }
 
   @Override
