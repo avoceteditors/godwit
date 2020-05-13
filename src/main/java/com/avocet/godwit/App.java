@@ -54,6 +54,11 @@ public class App implements Callable<Integer>{
   private boolean force;
 
   @Option(
+	names={"-o", "--output"}, defaultValue="build", paramLabel="OUTPUT",
+	description="Output directory, (defaults to '${DEFAULT-VALUE}'.")
+  private File output;
+
+  @Option(
 	names={"-s", "--source"}, defaultValue="src", paramLabel="SRC",
 	description="Sets the source directory, (defaults to ${DEFAULT-VALUE}).  Used to collect source data.") 
   private File source;
@@ -87,11 +92,19 @@ public class App implements Callable<Integer>{
         // Initialize Logger
         configLogger();
         logger.info("Called build operation");
+        Source src, csrc;
 
-        // Compile Source
-        Source src = new Source(source);
+        // Check Source
+        src = new Source(source);
+        if (source.lastModified() > cache.lastModified()){
+            logger.info("Source found to be more recent than cache, rebuilding");
+            src.compile(cache);
+        }
 
-        src.build(build_type);
+        // Compile Source from Cache
+        csrc = new Source(cache);
+        Renderer rend = new Renderer(src, csrc, build_type, output);
+
         return 0;
     }
 

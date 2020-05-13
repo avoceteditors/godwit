@@ -232,46 +232,18 @@ public class Source {
     }
 
 
-    public void build(String buildType){
+    public List<File> build(){
 
         // Initialize Variables
-        List<File> series = new ArrayList<File>();
-        List<File> books = new ArrayList<File>();
+        List<File> content = new ArrayList<File>();
         String tag;
-        SourceData src;
-
-        // Initialize Saxon Processor
-        Processor proc = new Processor(false);
-        DocumentBuilder docbldr = proc.newDocumentBuilder();
-        XdmNode node;
             
-
         // Build Lists of Series and Books
         for (File i : this.data.keySet()){
-            tag = this.data.get(i).tag;
-            if (tag == "series"){
-                series.add(i);
-            } else if (tag == "book"){
-                books.add(i);
-            }
+            content.add(i);
         }
 
-
-        if (!series.isEmpty()){
-            logger.info("Source contains a book:series");
-
-            for (File i : series){
-                src = this.data.get(i);
-
-            }
-        }
-        else if (!books.isEmpty()){
-            logger.info("Source contains a book:book");
-
-            for (File i : books){
-                src = this.data.get(i);
-            }
-        }
+        return content;
     }
 
     public void transform(SourceData src){
