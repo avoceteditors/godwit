@@ -1,31 +1,3 @@
-/*
- * Copyright (c) 2017, Kenneth P. J. Dyer <kenneth@avoceteditors.com>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- * * Neither the name of the copyright holder nor the name of its
- *   contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
 package com.avocet.godwit.source;
 
 // Java Imports
@@ -38,53 +10,93 @@ import java.lang.Exception;
 import org.apache.commons.io.FilenameUtils;
 
 // Saxon
-import net.sf.saxon.s9api.DocumentBuilder;
-import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.SaxonApiException;
-import net.sf.saxon.s9api.XdmNode;
-import net.sf.saxon.s9api.XPathCompiler;
-import net.sf.saxon.s9api.XPathExecutable;
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import java.io.IOException;
+import java.lang.IllegalArgumentException;
+import org.xml.sax.SAXException;
+
+// Logging
+import com.avocet.godwit.Kluit;
+import java.util.logging.Logger;
+
 
 // Local Imports
-import com.avocet.godwit.Kluit;
+import com.avocet.godwit.source.Namespaces;
 
-public class XMLSourceData {
+public class SourceData{
 
     // Logger Configuration
-    private static final Logger logger = Kluit.getLogger(SourceData.class.getName());
+    public static final Logger logger = Kluit.getLogger(SourceData.class.getName());
 
     // Private Attributes
     private File file;
     private long mtime;
-    private DocumentBuilder bld;
-    public XdmNode doc;
+    private static final DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
+    private static DocumentBuilder bldr;
+    public Document doc;
+    public String tag;
+    public String id;
+
+    /**
+     * File Types:
+     * - 0: XML
+     */
+    private int fileType = 0;
 
     // Public Attributes
     public boolean valid = true;
 
-    public XMLSourceData(File f, DocumentBuilder bld){
-        logger.finer(String.format("Initializing Source File; %s", f.toString()));
+    public SourceData(File f, int typ){
+        this.logger.finer(String.format("Initializing Source File; %s", f.toString()));
         this.file = f.getAbsoluteFile();
         this.mtime = this.file.lastModified();
+        this.fileType = typ;
 
-        // Initialize Procesor and DocumentBuilder
-        this.bld = bld; 
+        try{
+            fact.setNamespaceAware(true);
+            fact.setValidating(false);
+            fact.setXIncludeAware(true);
+            SourceData.bldr = fact.newDocumentBuilder();
+            this.read();
+        }
+        catch(ParserConfigurationException e){
+            logger.warning("Error compiling Document Builder");
+            this.valid = false;
+        }
 
-        // Build Document
-        this.read();
-        
+    }
+    public void read(){
+        if(this.fileType == 0){
+            this.read_xml();
+        }
     }
 
-    public void read(){
-        // Build Document
+    public void read_xml(){
         try {
-            this.doc = this.bld.build(this.file);
+            this.doc = SourceData.bldr.parse(this.file);
+            this.tag = this.doc.getDocumentElement().getTagName();
+            this.id = this.doc.getDocumentElement().getAttributeNodeNS(Namespaces.data.get("xml"), "id").getValue();
+
+            // Load Metadata
+            this.doc.getDocumentElement().setAttributeNS(Namespaces.dion, "mtime", String.format("%d", this.mtime));
+            this.doc.getDocumentElement().setAttributeNS(Namespaces.dion, "path", this.file.toString());
+
+
         }
-        catch(java.lang.Throwable e){
-            logger.warning(String.format("Error building XML Document"));
+        catch(IOException e){
+            logger.warning("I/O Exception occurred");
             e.printStackTrace();
-            this.valid = false;
+        }
+        catch(SAXException e){
+            logger.warning("XML parsing exception occurred");
+            e.printStackTrace();
+        }
+        catch(IllegalArgumentException e){
+            logger.warning("Illegal argument exception occurred");
+            e.printStackTrace();
         }
     }
 

@@ -47,7 +47,7 @@ public class Compiler {
         this.src = src;
 
         // Assemble files
-        logger.fine("Assembling Files List");
+        logger.info("Assembling Files List");
         if (src.exists()){
             assemble(this.src);
         }
@@ -70,4 +70,9 @@ public class Compiler {
         }
     }
 
+    /**
+     * Build Document
+     */
+    public void build(){
+    }
 }

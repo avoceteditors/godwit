@@ -39,7 +39,7 @@ public class App implements Callable<Integer>{
   private String build_type;
 
   @Option(
-	names={"-c", "--cache"}, defaultValue="project.xml", paramLabel="CFG",
+	names={"-c", "--cache"}, defaultValue=".dion", paramLabel="CFG",
 	description="Sets the cache file, (defaults to ${DEFAULT-VALUE}).  Generated from source data.")
   private File cache;
 
@@ -80,30 +80,46 @@ public class App implements Callable<Integer>{
   }
   
 
-   /* ;;;;;;;;;;;;;;;;;;;;;; COMMANDS ::::::::::::::::::::::::*/
-  @Command(name="info")
-  private int info(){
-	// Initialize Logging
-    configLogger();
-    logger.info("Called information operation");
-	return 0;
-  }
+    /* ;;;;;;;;;;;;;;;;;;;;;; COMMANDS ::::::::::::::::::::::::*/
+    @Command(name="build",
+        description="Builds document from source data")
+    private int build(){
+        // Initialize Logger
+        configLogger();
+        logger.info("Called build operation");
 
-  @Command(name="compile",
-	description="Compiles source data from configuration file")
-  private int compile(){
-      // Initialize Logger
-      configLogger();
-      logger.info("Called compilation operation");
+        // Compile Source
+        Source src = new Source(source);
 
-      Source src = new Source(source);
+        src.build(build_type);
+        return 0;
+    }
 
-      return 0;
-  }
+    @Command(name="compile",
+    description="Compiles source data from configuration file")
+    private int compile(){
 
-  @Override
-  public Integer call() throws Exception {
-	return 0;
-  }
+        // Initialize Logger
+        configLogger();
+        logger.info("Called compilation operation");
+
+        Source src = new Source(source);
+        src.compile(cache);
+
+        return 0;
+    }
+
+    @Command(name="info")
+    private int info(){
+    // Initialize Logging
+        configLogger();
+        logger.info("Called information operation");
+        return 0;
+    }
+
+    @Override
+        public Integer call() throws Exception {
+        return 0;
+    }
 
 }

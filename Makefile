@@ -5,7 +5,7 @@ NAME=godwit-$(VERSION)-SNAPSHOT-jar-with-dependencies
 JAR=target/$(NAME).jar
 
 
-build: compile assemble graal
+build: compile assemble 
 
 compile:
 	mvn compile
