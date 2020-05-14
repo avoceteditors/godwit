@@ -1,5 +1,5 @@
 // Package
-package com.avocet.godwit.source;
+package com.avocet.godwit;
 
 // Module Imports
 import javax.xml.xpath.XPath;

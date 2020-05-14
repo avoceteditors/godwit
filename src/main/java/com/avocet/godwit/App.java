@@ -59,7 +59,7 @@ public class App implements Callable<Integer>{
   private File output;
 
   @Option(
-	names={"-s", "--source"}, defaultValue="src", paramLabel="SRC",
+	names={"-s", "--source"}, defaultValue="project.xml", paramLabel="PROJECT",
 	description="Sets the source directory, (defaults to ${DEFAULT-VALUE}).  Used to collect source data.") 
   private File source;
 
@@ -67,6 +67,12 @@ public class App implements Callable<Integer>{
 	names={"-v", "--verbose"}, 
 	description="Enables verbosity in logging output")
   public static boolean verbose;
+
+  @Option(
+	names={"-C", "--check-valid"}, 
+	description="Enables XML validation during compile stage (experimental)")
+  public static boolean validate;
+
 
   // Main Process
   public static void main( String[] args ) {
@@ -92,6 +98,11 @@ public class App implements Callable<Integer>{
         // Initialize Logger
         configLogger();
         logger.info("Called build operation");
+
+        Compiler comp = new Compiler(source, validate);
+        comp.save(cache);
+
+        /*
         Source src, csrc;
 
         // Check Source
@@ -103,7 +114,7 @@ public class App implements Callable<Integer>{
 
         // Compile Source from Cache
         csrc = new Source(cache);
-        Renderer rend = new Renderer(src, csrc, build_type, output);
+        */
 
         return 0;
     }
@@ -116,8 +127,16 @@ public class App implements Callable<Integer>{
         configLogger();
         logger.info("Called compilation operation");
 
+        // Initialize Compiler
+        Compiler comp = new Compiler(source, validate);
+
+        // Cache File
+        comp.save(cache);
+
+        /*
         Source src = new Source(source);
         src.compile(cache);
+        */
 
         return 0;
     }

@@ -31,48 +31,143 @@ package com.avocet.godwit;
 // Module Imports
 import java.util.logging.Logger;
 import java.io.File;
+import org.apache.commons.io.FilenameUtils;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import java.io.IOException;
+import java.lang.IllegalArgumentException;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+// XPath
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import java.io.FileWriter;
 
 // Local Imports
 import com.avocet.godwit.Kluit;
+import com.avocet.godwit.Namespaces;
 
 public class Compiler {
 
     private static final Logger logger = Kluit.getLogger(Compiler.class.getName());
-    public File src;
-    private File files;
+    public File file;
+
+    // XML Document Data
+    private DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
+    private DocumentBuilder bldr;
+    public Document doc;
+
+    // XPath Document Data
+    private XPathFactory xpfact = XPathFactory.newInstance();
+    private XPath xpath;
+    private Namespaces ns = new Namespaces();
 
     // Constructors
-    public Compiler(File src){
+    public Compiler(File src, boolean validate){
         logger.info("Initializing compiler");
-        this.src = src;
+        this.file = src.getAbsoluteFile();
 
-        // Assemble files
-        logger.info("Assembling Files List");
-        if (src.exists()){
-            assemble(this.src);
+        // Initialize DocumentBuilder
+        try {
+            this.fact.setNamespaceAware(true);
+            this.fact.setXIncludeAware(true);
+            this.fact.setValidating(validate);
+            this.bldr = this.fact.newDocumentBuilder();
+            this.xpath = this.xpfact.newXPath();
+            this.ns.setContext(this.xpath);
+
+            // Assemble files
+            if (src.exists()){
+                assemble(this.file);
+            }
+            else {
+                logger.severe("Source path does not exist");
+                System.exit(1);
+            }
         }
-        else {
-            logger.severe("Source path does not exist");
+        catch(ParserConfigurationException e){
+            logger.severe("Error building document");
+            e.printStackTrace();
+        }
+
+    }
+
+    public void save(File cache){
+        // Make Absolute
+
+        // Validate
+        if(!cache.exists()){
+            cache.mkdirs();
+        } else if (cache.isFile()){
+            logger.severe(String.format("Warning, cache directory %s is a file", cache.toString()));
             System.exit(1);
         }
+        cache = new File(cache, this.file.getName()).getAbsoluteFile(); 
 
+        try {
+            // Initialize XSLT Cache Transformer 
+            Transformer trans = TransformerFactory
+                .newInstance()
+                .newTransformer();
+            trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+
+            // Write to File
+            FileWriter fw = new FileWriter(cache);
+            trans.transform(new DOMSource(this.doc), new StreamResult(fw));
+
+        } catch(TransformerException e){
+            logger.severe("Unable to save cache to file");
+            System.exit(1);
+        } catch(IOException e){
+            logger.severe("I/O exception blocks cache transformer");
+            System.exit(1);
+        }
+        
     }
 
     /**
      * Recursively assemble file list
      */
-    public void assemble(File path){
-        for(File f : path.listFiles()){
-            if (f.isDirectory()){
-                assemble(f);
-            } else if (f.isFile()){
+    public void assemble(File file){
+        logger.info("Assembling project");
+        try {
+            // Load Document
+            if (FilenameUtils.getExtension(file.toString()).equals("xml")){
+                this.doc = this.bldr.parse(file);
+            } else {
+                logger.severe(String.format("Unrecognized project file type: %s", file.toString()));
+                System.exit(1);
             }
+        } catch(SAXException e){
+            logger.severe("Error assembling project");
+            e.printStackTrace();
+            System.exit(1);
+        } catch(IOException e){
+            logger.severe("Error reading project file");
+            e.printStackTrace();
+            System.exit(1);
+        } catch(IllegalArgumentException e){
+            logger.severe("Invalid arguments");
+            e.printStackTrace();
         }
-    }
 
-    /**
-     * Build Document
-     */
-    public void build(){
     }
 }
