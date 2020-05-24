@@ -1,0 +1,4 @@
+#!/bin/sh
+java \
+    -Djava.util.logging.config.file=$HOME/.config/godwit/logging.properties \
+    -jar /home/kbapheus/public/godwit/target/godwit-1.0-SNAPSHOT-jar-with-dependencies.jar  $@

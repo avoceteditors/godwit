@@ -26,7 +26,6 @@
           </activation>
 
 
-
   <dependencies>
 	<!-- JUnit -->
     <dependency>
@@ -42,6 +41,15 @@
 	  <artifactId>picocli</artifactId>
 	  <version>4.2.0</version>
 	</dependency>
+
+
+    <!-- Xalan -->
+    <dependency>
+        <groupId>xalan</groupId>
+        <artifactId>xalan</artifactId>
+        <version>2.7.2</version>
+    </dependency>
+
 
 	<!-- Saxon -->
 	<dependency>
@@ -94,11 +102,33 @@
 
 
   </dependencies>
+  <!--
+    <resources>
+          <resource>
+              <directory>src/main/resources</directory>
+              <targetPath>etc</targetPath>
+          </resource>
+  </resources>
+  -->
 
   <build>
-    <pluginManagement>
+        <pluginManagement>
       <plugins>
+          <plugin>
+              <groupId>com.oracle.substratevm</groupId>
+              <artifactId>native-image-maven-plugin</artifactId>
+              <version>1.0.0-rc11</version>
+              <executions>
+                  <execution>
+                      <goals>
+                          <goal>native-image</goal>
+                      </goals>
+                      <phase>package</phase>
+                  </execution>
+              </executions>
 
+          </plugin>
+          
 		<plugin>
 		  <groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-compiler-plugin</artifactId>
