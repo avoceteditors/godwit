@@ -12,16 +12,14 @@ import java.lang.String;
 import java.util.concurrent.Callable;
 import java.util.List;
 import java.util.logging.Logger;
-import org.fusesource.jansi.AnsiConsole;
+
 
 // Local Imports
 import com.avocet.godwit.Compiler;
-import com.avocet.godwit.Kluit;
-import com.avocet.godwit.source.Source;
+import com.avocet.godwit.Formatter;
 
 /**
- * Hello world!
- *
+ * Godwit Application
  */
 @Command(
 	name="gwt", 
@@ -30,9 +28,7 @@ import com.avocet.godwit.source.Source;
 	description="XML Document Processor")
 public class App implements Callable<Integer>{
 
-  // Logger
-
-  // Options
+    // Options
   @Option(
 	names={"-b", "--build"}, defaultValue="book", paramLabel="TYPE",
 	description="Type of build to run, (defaults to ${DEFAULT-VALUE}).")
@@ -80,51 +76,28 @@ public class App implements Callable<Integer>{
 	System.exit(exitCode);
   }
 
-  /* ;;;;;;;;;;;;;;;;;;;;;; LOGGING ::::::::::::::::::::::::*/
-  private static Logger logger;
-  public void configLogger(){
-      AnsiConsole.systemInstall();
-      Kluit logConf = new Kluit();
-      logConf.set(verbose, debug);
+    /* ;;;;;;;;;;;;;;;;;;;;;; LOGGING ::::::::::::::::::::::::*/
+    private static final Logger logger = Logger.getLogger(App.class.getName()); 
 
-      logger = logConf.getLogger();
-  }
-  
 
     /* ;;;;;;;;;;;;;;;;;;;;;; COMMANDS ::::::::::::::::::::::::*/
     @Command(name="build",
         description="Builds document from source data")
     private int build(){
-        // Initialize Logger
-        configLogger();
         logger.info("Called build operation");
 
-        Compiler comp = new Compiler(source, validate);
-        comp.save(cache);
+        //Compiler comp = new Compiler(source, validate);
+        //comp.save(cache);
 
-        /*
-        Source src, csrc;
+        //Formatter fo = new Formatter(source, cache);
 
-        // Check Source
-        src = new Source(source);
-        if (source.lastModified() > cache.lastModified()){
-            logger.info("Source found to be more recent than cache, rebuilding");
-            src.compile(cache);
-        }
-
-        // Compile Source from Cache
-        csrc = new Source(cache);
-        */
-
+        
         return 0;
     }
 
     @Command(name="compile",
     description="Compiles source data from configuration file")
     private int compile(){
-
-        // Initialize Logger
-        configLogger();
         logger.info("Called compilation operation");
 
         // Initialize Compiler
@@ -144,13 +117,12 @@ public class App implements Callable<Integer>{
     @Command(name="info")
     private int info(){
     // Initialize Logging
-        configLogger();
         logger.info("Called information operation");
         return 0;
     }
 
     @Override
-        public Integer call() throws Exception {
+    public Integer call() throws Exception {
         return 0;
     }
 
